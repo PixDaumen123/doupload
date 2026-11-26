@@ -5,4 +5,5 @@ Die Dateien gehen automatisch per E-Mail an den Berater.
 
 - Webseite: `index.html` (GitHub Pages)
 - Backend: Supabase-Projekt **DoUpload** (`keurzrtbpcefwsowtfmc`), Edge Function `api` (`supabase/functions/api/index.ts`)
-- Secrets (Supabase → Edge Functions → Secrets): `RESEND_API_KEY`, `ADVISOR_PIN`, optional `EMAIL_FROM`
+- Secrets (Supabase → Edge Functions → Secrets): `RESEND_API_KEY`, optional `EMAIL_FROM`
+- Empfänger registrieren sich selbst (E-Mail + Passwort); hochgeladene Dateien sind unter „Mein Bereich“ abrufbar
