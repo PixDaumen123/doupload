@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DoUpload – Dokumente sicher übermitteln</title>
+<style>
+:root{
+  --bg:#f4f6f8; --card:#fff; --ink:#14212b; --muted:#5d6b78; --line:#dde3e9;
+  --brand:#0f5c4d; --brand-2:#e6f2ef; --accent:#c9822b; --ok:#1e8a4c; --warn:#b54708;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Arabic","Noto Sans Devanagari",sans-serif}
+html[dir=rtl] body{line-height:1.7}
+button,input,textarea,select{font:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom))}
+.wide{max-width:880px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+.logo i{width:30px;height:30px;border-radius:9px;background:var(--brand);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+.top-r{display:flex;align-items:center;gap:12px}
+.lang{appearance:none;border:1px solid var(--line);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235d6b78' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20'/%3E%3C/svg%3E") no-repeat 10px center;padding:8px 12px 8px 30px;border-radius:999px;min-height:40px;cursor:pointer;font-size:.9rem}
+html[dir=rtl] .lang{background-position:calc(100% - 10px) center;padding:8px 30px 8px 12px}
+.link{background:none;border:0;color:var(--brand);cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:16px}
+h1{font-size:1.6rem;line-height:1.25;margin:0 0 8px;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:0 0 12px}
+p{margin:0 0 12px}
+ol{padding-inline-start:22px}
+.muted{color:var(--muted)}
+.small{font-size:.875rem}
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+input[type=text],input[type=email],textarea,select.f{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:transparent}
+textarea{min-height:70px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:14px 20px;font-weight:600;cursor:pointer;background:var(--brand);color:#fff;min-height:50px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.block{width:100%}
+.btn.sm{min-height:36px;padding:8px 12px;font-size:.875rem;border-radius:9px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 200px}
+.choice{display:grid;gap:12px}
+.choice button{text-align:start;padding:20px;border:1px solid var(--line);background:#fff;border-radius:var(--r);cursor:pointer}
+.choice button strong{display:block;font-size:1.1rem}
+.choice button:hover{border-color:var(--brand)}
+.code-input{font-size:1.8rem !important;letter-spacing:.35em;text-align:center;text-transform:uppercase;font-weight:700;font-family:ui-monospace,Menlo,monospace}
+.err{color:var(--warn);font-weight:600;margin-top:10px}
+.progress{display:flex;gap:6px;margin:4px 0 18px}
+.progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.progress span.done{background:var(--brand)}
+.progress span.now{background:var(--accent)}
+.step-label{font-size:.85rem;font-weight:700;color:var(--accent)}
+.doc-title{font-size:1.9rem;line-height:1.2;margin:6px 0 4px;letter-spacing:-.02em}
+.orig{font-size:.85rem;color:var(--muted);margin:0 0 12px}
+.hint{background:var(--brand-2);border-radius:10px;padding:12px 14px;margin:10px 0 16px;font-size:.95rem}
+.drop{display:block;border:2px dashed #b7c4cf;border-radius:var(--r);padding:26px 16px;text-align:center;cursor:pointer;background:#fafbfc}
+.drop strong{display:block;font-size:1.05rem;color:var(--brand)}
+.drop input{display:none}
+.files{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.files li{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:8px}
+.files img,.files .pdf{width:48px;height:48px;object-fit:cover;border-radius:7px;background:#eef1f4;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:var(--muted);flex:none}
+.files .fn{flex:1;min-width:0;font-size:.85rem;word-break:break-all;unicode-bidi:plaintext}
+.files button{background:none;border:0;color:var(--warn);cursor:pointer;font-size:1.3rem;padding:4px 8px}
+.confirm{display:flex;gap:10px;align-items:flex-start;margin:16px 0;padding:12px;border-radius:10px;border:1px solid var(--line);font-size:.95rem;cursor:pointer}
+.confirm input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--brand)}
+.nav{display:flex;gap:10px;margin-top:6px}
+.nav .btn.sec{flex:0 0 auto}
+.nav .btn:not(.sec){flex:1}
+.summary{list-style:none;padding:0;margin:0 0 16px}
+.summary li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ok{color:var(--ok);font-weight:700;white-space:nowrap}
+.doc-row{display:grid;grid-template-columns:1fr auto;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:#fafbfc}
+.doc-row input{padding:8px 10px}
+.doc-row .del{background:none;border:0;color:var(--warn);cursor:pointer;font-size:1.3rem;align-self:start}
+.tag{font-size:.72rem;color:var(--brand);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:.85rem;cursor:pointer}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:start;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.code{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:.12em;background:var(--brand-2);padding:3px 8px;border-radius:6px}
+.badge{font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef1f4;color:var(--muted)}
+.badge.done{background:#e3f4ea;color:var(--ok)}
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;font-weight:600}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.note{font-size:.8rem;color:var(--muted);border-inline-start:3px solid var(--accent);padding-inline-start:10px;margin-top:14px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============ Sprachen ============ */
+const LANGS = [
+  {c:"de",  n:"Deutsch"},
+  {c:"tr",  n:"Türkçe"},
+  {c:"ary", n:"الدارجة المغربية", rtl:true},
+  {c:"hr",  n:"Hrvatski"},
+  {c:"hi",  n:"हिन्दी"},
+  {c:"it",  n:"Italiano"},
+  {c:"ar",  n:"العربية", rtl:true},
+  {c:"en",  n:"English"}
+];
+
+const T = {
+de:{home_t:"Dokumente einfach übermitteln",home_s:"Schritt für Schritt – ein Dokument pro Seite. So kommt nichts durcheinander.",
+  have:"Ich habe einen Code",have_s:"Dokumente hochladen, die angefordert wurden",adv:"Berater-Bereich",adv_s:"Dokumente anfordern und Codes erstellen",
+  code_t:"Ihr persönlicher Code",code_s:"Sie haben ihn von Ihrem Berater erhalten (6 Zeichen).",next:"Weiter",code_err:"Dieser Code ist nicht bekannt. Bitte prüfen Sie die Eingabe.",
+  hello:"Hallo {name}",needs:"{adv} benötigt diese Dokumente von Ihnen ({n}):",purpose:"Anlass: {title}",your_adv:"Ihr Berater",
+  w_hint:"Sie sehen gleich jedes Dokument auf einer eigenen Seite. Erst wenn ein Dokument hochgeladen ist, geht es weiter.",start:"Los geht's",
+  step:"Dokument {i} von {n}",up:"📷 Foto aufnehmen oder Datei wählen",up_s:"Bilder oder PDF · mehrere Dateien möglich",
+  confirm:"Ja, das ist {doc}.",back:"Zurück",next_doc:"Weiter zum nächsten Dokument",finish:"Fertig – Übersicht",remove:"Entfernen",
+  done_t:"Alles beisammen",done_s:"Bitte kurz prüfen – dann senden.",file:["Datei","Dateien"],send:"Jetzt senden",
+  fb:"Ihr Gerät kann die Dateien nicht direkt teilen. So geht's:",fb_dl:"Alle Dateien speichern ({n})",fb_mail:"E-Mail an {email} öffnen",fb_att:"und die Dateien anhängen.",
+  note:"Die Dateien werden automatisch eindeutig benannt (z. B. {ex}), damit Ihr Berater sie sofort zuordnen kann.",
+  thx:"Vielen Dank!",thx_s:"Ihre Unterlagen wurden übermittelt. Sie können diese Seite schließen.",start_link:"Start",orig:"Deutsch:"},
+en:{home_t:"Send your documents easily",home_s:"Step by step – one document per page, so nothing gets mixed up.",
+  have:"I have a code",have_s:"Upload the requested documents",adv:"Advisor area",adv_s:"Request documents and create codes",
+  code_t:"Your personal code",code_s:"You received it from your advisor (6 characters).",next:"Continue",code_err:"This code is not recognised. Please check your entry.",
+  hello:"Hello {name}",needs:"{adv} needs these documents from you ({n}):",purpose:"Purpose: {title}",your_adv:"Your advisor",
+  w_hint:"Each document will be shown on its own page. You can only continue once a document has been uploaded.",start:"Let's start",
+  step:"Document {i} of {n}",up:"📷 Take a photo or choose a file",up_s:"Images or PDF · multiple files allowed",
+  confirm:"Yes, this is: {doc}.",back:"Back",next_doc:"Continue to next document",finish:"Done – overview",remove:"Remove",
+  done_t:"All set",done_s:"Please check briefly – then send.",file:["file","files"],send:"Send now",
+  fb:"Your device can't share the files directly. Here's how:",fb_dl:"Save all files ({n})",fb_mail:"Open an email to {email}",fb_att:"and attach the files.",
+  note:"The files are named automatically (e.g. {ex}) so your advisor can match them right away.",
+  thx:"Thank you!",thx_s:"Your documents have been sent. You can close this page.",start_link:"Home",orig:"German:"},
+tr:{home_t:"Belgelerinizi kolayca gönderin",home_s:"Adım adım – her sayfada bir belge. Böylece hiçbir şey karışmaz.",
+  have:"Bir kodum var",have_s:"İstenen belgeleri yükleyin",adv:"Danışman alanı",adv_s:"Belge talep edin ve kod oluşturun",
+  code_t:"Kişisel kodunuz",code_s:"Kodu danışmanınızdan aldınız (6 karakter).",next:"Devam",code_err:"Bu kod tanınmıyor. Lütfen girişinizi kontrol edin.",
+  hello:"Merhaba {name}",needs:"{adv} sizden şu belgeleri istiyor ({n}):",purpose:"Konu: {title}",your_adv:"Danışmanınız",
+  w_hint:"Her belgeyi ayrı bir sayfada göreceksiniz. Belge yüklenmeden bir sonraki adıma geçilemez.",start:"Başlayalım",
+  step:"Belge {i} / {n}",up:"📷 Fotoğraf çekin veya dosya seçin",up_s:"Resim veya PDF · birden fazla dosya mümkün",
+  confirm:"Evet, bu belge: {doc}.",back:"Geri",next_doc:"Sonraki belgeye geç",finish:"Bitti – özet",remove:"Kaldır",
+  done_t:"Her şey hazır",done_s:"Lütfen kısaca kontrol edin, sonra gönderin.",file:["dosya","dosya"],send:"Şimdi gönder",
+  fb:"Cihazınız dosyaları doğrudan paylaşamıyor. Şöyle yapın:",fb_dl:"Tüm dosyaları kaydedin ({n})",fb_mail:"{email} adresine e-posta açın",fb_att:"ve dosyaları ekleyin.",
+  note:"Dosyalar otomatik olarak adlandırılır (ör. {ex}), böylece danışmanınız onları hemen eşleştirebilir.",
+  thx:"Teşekkürler!",thx_s:"Belgeleriniz gönderildi. Bu sayfayı kapatabilirsiniz.",start_link:"Başlangıç",orig:"Almanca:"},
+ary:{home_t:"صيفط الوثائق ديالك بسهولة",home_s:"خطوة بخطوة – وثيقة وحدة ف كل صفحة، باش ما يتخلط والو.",
+  have:"عندي كود",have_s:"طلّع الوثائق اللي تطلبو منك",adv:"خاص بالمستشار",adv_s:"طلب الوثائق وصاوب الكودات",
+  code_t:"الكود ديالك",code_s:"عطاهولك المستشار ديالك (6 حروف).",next:"كمّل",code_err:"هاد الكود ما معروفش. عافاك تأكد منو.",
+  hello:"السلام {name}",needs:"{adv} محتاج منك هاد الوثائق ({n}):",purpose:"الموضوع: {title}",your_adv:"المستشار ديالك",
+  w_hint:"غادي تشوف كل وثيقة ف صفحة بوحدها. ما تقدرش تكمّل حتى تطلّع الوثيقة.",start:"يالاه نبداو",
+  step:"الوثيقة {i} من {n}",up:"📷 صوّر ولا ختار ملف",up_s:"تصاور ولا PDF · تقدر تختار بزاف ديال الملفات",
+  confirm:"إيه، هادي هي: {doc}.",back:"رجع",next_doc:"دوز للوثيقة الجاية",finish:"سالينا – الملخص",remove:"حيّد",
+  done_t:"كلشي واجد",done_s:"عافاك شوف بسرعة – من بعد صيفط.",file:["ملف","ملفات","ملف"],send:"صيفط دابا",
+  fb:"التيليفون ديالك ما يقدرش يشارك الملفات مباشرة. ديرها هكا:",fb_dl:"سجّل جميع الملفات ({n})",fb_mail:"حل إيميل ل {email}",fb_att:"وزيد فيه الملفات.",
+  note:"الملفات كتسمّى بوحدها (بحال {ex})، باش المستشار ديالك يعرفهم دغيا.",
+  thx:"شكرا بزاف!",thx_s:"الوثائق ديالك تصيفطو. تقدر تسد هاد الصفحة.",start_link:"البداية",orig:"بالألمانية:"},
+hr:{home_t:"Jednostavno pošaljite dokumente",home_s:"Korak po korak – jedan dokument po stranici. Tako se ništa ne pomiješa.",
+  have:"Imam kod",have_s:"Učitajte tražene dokumente",adv:"Područje za savjetnika",adv_s:"Zatražite dokumente i izradite kodove",
+  code_t:"Vaš osobni kod",code_s:"Dobili ste ga od svog savjetnika (6 znakova).",next:"Dalje",code_err:"Ovaj kod nije poznat. Molimo provjerite unos.",
+  hello:"Pozdrav, {name}",needs:"{adv} treba od Vas ove dokumente ({n}):",purpose:"Povod: {title}",your_adv:"Vaš savjetnik",
+  w_hint:"Svaki dokument vidjet ćete na zasebnoj stranici. Dalje možete tek kada je dokument učitan.",start:"Krenimo",
+  step:"Dokument {i} od {n}",up:"📷 Snimite fotografiju ili odaberite datoteku",up_s:"Slike ili PDF · moguće više datoteka",
+  confirm:"Da, ovo je: {doc}.",back:"Natrag",next_doc:"Dalje na sljedeći dokument",finish:"Gotovo – pregled",remove:"Ukloni",
+  done_t:"Sve je spremno",done_s:"Molimo kratko provjerite – zatim pošaljite.",file:["datoteka","datoteke","datoteka"],send:"Pošalji sada",
+  fb:"Vaš uređaj ne može izravno dijeliti datoteke. Evo kako:",fb_dl:"Spremite sve datoteke ({n})",fb_mail:"Otvorite e-poruku za {email}",fb_att:"i priložite datoteke.",
+  note:"Datoteke se automatski imenuju (npr. {ex}) kako bi ih Vaš savjetnik odmah mogao razvrstati.",
+  thx:"Hvala!",thx_s:"Vaši dokumenti su poslani. Možete zatvoriti ovu stranicu.",start_link:"Početak",orig:"Njemački:"},
+hi:{home_t:"दस्तावेज़ आसानी से भेजें",home_s:"कदम दर कदम – हर पेज पर एक दस्तावेज़। इससे कुछ भी गड़बड़ नहीं होगा।",
+  have:"मेरे पास कोड है",have_s:"माँगे गए दस्तावेज़ अपलोड करें",adv:"सलाहकार क्षेत्र",adv_s:"दस्तावेज़ माँगें और कोड बनाएँ",
+  code_t:"आपका निजी कोड",code_s:"यह आपको अपने सलाहकार से मिला है (6 अक्षर)।",next:"आगे",code_err:"यह कोड मान्य नहीं है। कृपया जाँच लें।",
+  hello:"नमस्ते {name}",needs:"{adv} को आपसे ये दस्तावेज़ चाहिए ({n}):",purpose:"विषय: {title}",your_adv:"आपके सलाहकार",
+  w_hint:"हर दस्तावेज़ एक अलग पेज पर दिखेगा। दस्तावेज़ अपलोड होने के बाद ही आप आगे बढ़ सकते हैं।",start:"शुरू करें",
+  step:"दस्तावेज़ {i} / {n}",up:"📷 फ़ोटो लें या फ़ाइल चुनें",up_s:"चित्र या PDF · कई फ़ाइलें संभव",
+  confirm:"हाँ, यह है: {doc}।",back:"पीछे",next_doc:"अगले दस्तावेज़ पर जाएँ",finish:"हो गया – सारांश",remove:"हटाएँ",
+  done_t:"सब तैयार है",done_s:"कृपया एक बार जाँच लें – फिर भेजें।",file:["फ़ाइल","फ़ाइलें"],send:"अभी भेजें",
+  fb:"आपका डिवाइस फ़ाइलें सीधे साझा नहीं कर सकता। ऐसे करें:",fb_dl:"सभी फ़ाइलें सहेजें ({n})",fb_mail:"{email} पर ईमेल खोलें",fb_att:"और फ़ाइलें संलग्न करें।",
+  note:"फ़ाइलों के नाम अपने-आप रखे जाते हैं (जैसे {ex}), ताकि आपके सलाहकार उन्हें तुरंत पहचान सकें।",
+  thx:"धन्यवाद!",thx_s:"आपके दस्तावेज़ भेज दिए गए हैं। आप यह पेज बंद कर सकते हैं।",start_link:"शुरुआत",orig:"जर्मन में:"},
+it:{home_t:"Inviare documenti in modo semplice",home_s:"Passo dopo passo – un documento per pagina. Così nulla si confonde.",
+  have:"Ho un codice",have_s:"Caricare i documenti richiesti",adv:"Area consulente",adv_s:"Richiedere documenti e creare codici",
+  code_t:"Il Suo codice personale",code_s:"L'ha ricevuto dal Suo consulente (6 caratteri).",next:"Avanti",code_err:"Questo codice non è riconosciuto. Controlli l'inserimento.",
+  hello:"Buongiorno {name}",needs:"{adv} ha bisogno di questi documenti ({n}):",purpose:"Motivo: {title}",your_adv:"Il Suo consulente",
+  w_hint:"Vedrà ogni documento su una pagina separata. Si può proseguire solo dopo aver caricato il documento.",start:"Iniziamo",
+  step:"Documento {i} di {n}",up:"📷 Scatti una foto o scelga un file",up_s:"Immagini o PDF · più file possibili",
+  confirm:"Sì, questo è: {doc}.",back:"Indietro",next_doc:"Avanti al prossimo documento",finish:"Fatto – riepilogo",remove:"Rimuovi",
+  done_t:"Tutto pronto",done_s:"Controlli brevemente – poi invii.",file:["file","file"],send:"Invia ora",
+  fb:"Il Suo dispositivo non può condividere i file direttamente. Ecco come fare:",fb_dl:"Salvare tutti i file ({n})",fb_mail:"Aprire un'e-mail a {email}",fb_att:"e allegare i file.",
+  note:"I file vengono nominati automaticamente (ad es. {ex}), così il Suo consulente può assegnarli subito.",
+  thx:"Grazie!",thx_s:"I Suoi documenti sono stati inviati. Può chiudere questa pagina.",start_link:"Inizio",orig:"In tedesco:"},
+ar:{home_t:"أرسل مستنداتك بسهولة",home_s:"خطوة بخطوة – مستند واحد في كل صفحة، حتى لا يختلط شيء.",
+  have:"لديّ رمز",have_s:"تحميل المستندات المطلوبة",adv:"قسم المستشار",adv_s:"طلب المستندات وإنشاء الرموز",
+  code_t:"رمزك الشخصي",code_s:"حصلت عليه من مستشارك (6 خانات).",next:"متابعة",code_err:"هذا الرمز غير معروف. يرجى التحقق من الإدخال.",
+  hello:"مرحبًا {name}",needs:"يحتاج {adv} منك إلى المستندات التالية ({n}):",purpose:"الموضوع: {title}",your_adv:"مستشارك",
+  w_hint:"سترى كل مستند في صفحة مستقلة. لا يمكنك المتابعة إلا بعد تحميل المستند.",start:"لنبدأ",
+  step:"المستند {i} من {n}",up:"📷 التقط صورة أو اختر ملفًا",up_s:"صور أو PDF · يمكن اختيار عدة ملفات",
+  confirm:"نعم، هذا هو: {doc}.",back:"رجوع",next_doc:"المتابعة إلى المستند التالي",finish:"تم – الملخص",remove:"إزالة",
+  done_t:"كل شيء جاهز",done_s:"يرجى المراجعة سريعًا – ثم الإرسال.",file:["ملف","ملفات","ملفًا"],send:"إرسال الآن",
+  fb:"لا يستطيع جهازك مشاركة الملفات مباشرة. اتبع ما يلي:",fb_dl:"حفظ جميع الملفات ({n})",fb_mail:"افتح رسالة بريد إلكتروني إلى {email}",fb_att:"وأرفق الملفات.",
+  note:"تُسمّى الملفات تلقائيًا (مثلًا {ex}) حتى يتمكن مستشارك من تمييزها فورًا.",
+  thx:"شكرًا لك!",thx_s:"تم إرسال مستنداتك. يمكنك إغلاق هذه الصفحة.",start_link:"البداية",orig:"بالألمانية:"}
+};
+
+/* Zusätzliche Texte für Upload/Versand */
+const T2 = {
+  de:{uploading:"Wird hochgeladen …",up_err:"Hochladen fehlgeschlagen. Bitte erneut versuchen.",sending:"Wird gesendet …",send_err:"Senden fehlgeschlagen. Bitte erneut versuchen.",already:"Diese Unterlagen wurden bereits gesendet.",offline:"Keine Verbindung. Bitte Internet prüfen."},
+  en:{uploading:"Uploading …",up_err:"Upload failed. Please try again.",sending:"Sending …",send_err:"Sending failed. Please try again.",already:"These documents have already been sent.",offline:"No connection. Please check your internet."},
+  tr:{uploading:"Yükleniyor …",up_err:"Yükleme başarısız. Lütfen tekrar deneyin.",sending:"Gönderiliyor …",send_err:"Gönderim başarısız. Lütfen tekrar deneyin.",already:"Bu belgeler zaten gönderildi.",offline:"Bağlantı yok. Lütfen internetinizi kontrol edin."},
+  ary:{uploading:"كيتطلّع …",up_err:"ما تطلّعش. عاود جرّب عافاك.",sending:"كيتصيفط …",send_err:"ما تصيفطش. عاود جرّب عافاك.",already:"هاد الوثائق تصيفطو من قبل.",offline:"ما كاينش الأنترنيت. شوف الكونكسيون ديالك."},
+  hr:{uploading:"Učitavanje …",up_err:"Učitavanje nije uspjelo. Molimo pokušajte ponovno.",sending:"Slanje …",send_err:"Slanje nije uspjelo. Molimo pokušajte ponovno.",already:"Ovi dokumenti su već poslani.",offline:"Nema veze. Molimo provjerite internet."},
+  hi:{uploading:"अपलोड हो रहा है …",up_err:"अपलोड नहीं हुआ। कृपया फिर से कोशिश करें।",sending:"भेजा जा रहा है …",send_err:"भेजना नहीं हुआ। कृपया फिर से कोशिश करें।",already:"ये दस्तावेज़ पहले ही भेजे जा चुके हैं।",offline:"कनेक्शन नहीं है। कृपया इंटरनेट जाँचें।"},
+  it:{uploading:"Caricamento …",up_err:"Caricamento non riuscito. Riprovi.",sending:"Invio in corso …",send_err:"Invio non riuscito. Riprovi.",already:"Questi documenti sono già stati inviati.",offline:"Nessuna connessione. Controlli internet."},
+  ar:{uploading:"جارٍ التحميل …",up_err:"فشل التحميل. يرجى المحاولة مرة أخرى.",sending:"جارٍ الإرسال …",send_err:"فشل الإرسال. يرجى المحاولة مرة أخرى.",already:"تم إرسال هذه المستندات من قبل.",offline:"لا يوجد اتصال. يرجى التحقق من الإنترنت."}
+};
+for(const k in T2) Object.assign(T[k], T2[k]);
+
+/* Vorlagen: Deutsch (für Berater + Dateinamen) und Übersetzungen für den Kunden */
+const TEMPLATES = [
+  {de:["Personalausweis (Vorder- und Rückseite)","Bitte beide Seiten fotografieren. Alle Ecken müssen sichtbar sein."],
+   en:["ID card (front and back)","Please photograph both sides. All corners must be visible."],
+   tr:["Kimlik kartı (ön ve arka yüz)","Lütfen iki yüzünü de fotoğraflayın. Tüm köşeler görünür olmalı."],
+   ary:["بطاقة التعريف (القدام واللور)","صوّر الجهتين بجوج. خاص جميع الزوايا يبانو."],
+   hr:["Osobna iskaznica (prednja i stražnja strana)","Molimo fotografirajte obje strane. Svi kutovi moraju biti vidljivi."],
+   hi:["पहचान पत्र (आगे और पीछे)","कृपया दोनों तरफ़ की फ़ोटो लें। सभी कोने दिखने चाहिए।"],
+   it:["Carta d'identità (fronte e retro)","Fotografi entrambi i lati. Tutti gli angoli devono essere visibili."],
+   ar:["بطاقة الهوية (الوجه والظهر)","يرجى تصوير الوجهين. يجب أن تظهر جميع الزوايا."]},
+  {de:["Gehaltsabrechnungen der letzten 3 Monate","Alle drei Monate hochladen – z. B. drei Fotos oder ein PDF."],
+   en:["Payslips for the last 3 months","Upload all three months – e.g. three photos or one PDF."],
+   tr:["Son 3 ayın maaş bordroları","Üç ayın hepsini yükleyin – ör. üç fotoğraf veya bir PDF."],
+   ary:["ورقة الخلصة ديال آخر 3 شهور","طلّع التلاتة ديال الشهور كاملين – بحال 3 تصاور ولا PDF واحد."],
+   hr:["Platne liste za posljednja 3 mjeseca","Učitajte sva tri mjeseca – npr. tri fotografije ili jedan PDF."],
+   hi:["पिछले 3 महीनों की वेतन पर्चियाँ","तीनों महीनों की पर्चियाँ अपलोड करें – जैसे तीन फ़ोटो या एक PDF।"],
+   it:["Buste paga degli ultimi 3 mesi","Carichi tutti e tre i mesi – ad es. tre foto o un PDF."],
+   ar:["قسائم الراتب لآخر 3 أشهر","حمّل الأشهر الثلاثة كلها – مثلًا ثلاث صور أو ملف PDF واحد."]},
+  {de:["Kontoauszüge der letzten 3 Monate","Vom Gehaltskonto, alle Seiten."],
+   en:["Bank statements for the last 3 months","From your salary account, all pages."],
+   tr:["Son 3 ayın banka hesap özetleri","Maaş hesabınızdan, tüm sayfalar."],
+   ary:["كشف الحساب ديال البنكة ديال آخر 3 شهور","ديال الحساب اللي كتخلص فيه، جميع الصفحات."],
+   hr:["Izvodi s računa za posljednja 3 mjeseca","S računa na koji primate plaću, sve stranice."],
+   hi:["पिछले 3 महीनों के बैंक स्टेटमेंट","वेतन खाते के, सभी पेज।"],
+   it:["Estratti conto degli ultimi 3 mesi","Del conto su cui riceve lo stipendio, tutte le pagine."],
+   ar:["كشوف الحساب البنكي لآخر 3 أشهر","من حساب الراتب، جميع الصفحات."]},
+  {de:["Letzter Einkommensteuerbescheid","Den vollständigen Bescheid vom Finanzamt, alle Seiten."],
+   en:["Latest income tax assessment","The complete notice from the tax office, all pages."],
+   tr:["Son gelir vergisi tahakkuk bildirimi","Vergi dairesinden gelen bildirimin tamamı, tüm sayfalar."],
+   ary:["آخر ورقة ديال الضريبة على الدخل","الورقة كاملة اللي جاتك من الضرائب، جميع الصفحات."],
+   hr:["Posljednje rješenje o porezu na dohodak","Cijelo rješenje porezne uprave, sve stranice."],
+   hi:["पिछला आयकर निर्धारण पत्र","कर कार्यालय का पूरा पत्र, सभी पेज।"],
+   it:["Ultimo avviso di accertamento dell'imposta sul reddito","L'avviso completo dell'ufficio delle imposte, tutte le pagine."],
+   ar:["آخر إشعار بتقدير ضريبة الدخل","الإشعار الكامل من مكتب الضرائب، جميع الصفحات."]},
+  {de:["Renteninformation","Das jährliche Schreiben der Deutschen Rentenversicherung."],
+   en:["Pension statement","The annual letter from the German pension insurance (Deutsche Rentenversicherung)."],
+   tr:["Emeklilik bilgilendirmesi","Alman Emeklilik Sigortası'nın (Deutsche Rentenversicherung) yıllık mektubu."],
+   ary:["معلومات على التقاعد","البرية اللي كتجيك كل عام من Deutsche Rentenversicherung."],
+   hr:["Informacija o mirovini","Godišnje pismo njemačkog mirovinskog osiguranja (Deutsche Rentenversicherung)."],
+   hi:["पेंशन सूचना","जर्मन पेंशन बीमा (Deutsche Rentenversicherung) का वार्षिक पत्र।"],
+   it:["Informativa sulla pensione","La lettera annuale dell'assicurazione pensionistica tedesca (Deutsche Rentenversicherung)."],
+   ar:["إشعار التقاعد","الرسالة السنوية من هيئة التأمين التقاعدي الألمانية (Deutsche Rentenversicherung)."]},
+  {de:["Bestehende Versicherungspolice","Die erste Seite mit Vertragsnummer genügt."],
+   en:["Existing insurance policy","The first page with the contract number is enough."],
+   tr:["Mevcut sigorta poliçesi","Sözleşme numarasının olduğu ilk sayfa yeterli."],
+   ary:["عقد التأمين اللي عندك","كافية الصفحة الأولى اللي فيها نمرة العقد."],
+   hr:["Postojeća polica osiguranja","Dovoljna je prva stranica s brojem ugovora."],
+   hi:["मौजूदा बीमा पॉलिसी","अनुबंध संख्या वाला पहला पेज काफ़ी है।"],
+   it:["Polizza assicurativa esistente","Basta la prima pagina con il numero di contratto."],
+   ar:["وثيقة التأمين الحالية","تكفي الصفحة الأولى التي تحمل رقم العقد."]},
+  {de:["Unterschriebenes Formular","Bitte das Formular ausdrucken, unterschreiben und vollständig fotografieren."],
+   en:["Signed form","Please print the form, sign it and photograph it completely."],
+   tr:["İmzalı form","Lütfen formu yazdırın, imzalayın ve tamamını fotoğraflayın."],
+   ary:["استمارة مسيني عليها","طبع الاستمارة، سيني عليها وصوّرها كاملة."],
+   hr:["Potpisani obrazac","Molimo ispišite obrazac, potpišite ga i fotografirajte u cijelosti."],
+   hi:["हस्ताक्षरित फ़ॉर्म","कृपया फ़ॉर्म प्रिंट करें, हस्ताक्षर करें और पूरी फ़ोटो लें।"],
+   it:["Modulo firmato","Stampi il modulo, lo firmi e lo fotografi per intero."],
+   ar:["استمارة موقّعة","يرجى طباعة الاستمارة وتوقيعها وتصويرها كاملة."]},
+  {de:["Meldebescheinigung","Aktuelle Bescheinigung vom Bürgeramt."],
+   en:["Certificate of registration (Meldebescheinigung)","Current certificate from the citizens' office (Bürgeramt)."],
+   tr:["İkametgâh belgesi (Meldebescheinigung)","Bürgeramt'tan alınmış güncel belge."],
+   ary:["شهادة السكنى (Meldebescheinigung)","شهادة جديدة من Bürgeramt."],
+   hr:["Potvrda o prijavi boravišta (Meldebescheinigung)","Aktualna potvrda iz ureda za građane (Bürgeramt)."],
+   hi:["निवास पंजीकरण प्रमाणपत्र (Meldebescheinigung)","नागरिक कार्यालय (Bürgeramt) का ताज़ा प्रमाणपत्र।"],
+   it:["Certificato di residenza (Meldebescheinigung)","Certificato attuale dell'ufficio anagrafe (Bürgeramt)."],
+   ar:["شهادة تسجيل السكن (Meldebescheinigung)","شهادة حديثة من مكتب المواطنين (Bürgeramt)."]}
+];
+
+/* ============ Backend (Supabase Edge Function) ============ */
+const API = "https://keurzrtbpcefwsowtfmc.supabase.co/functions/v1/api";
+const LKEY = "dokuschritt_lang", PKEY = "dokuschritt_pin";
+async function api(payload){
+  const isForm = payload instanceof FormData;
+  const res = await fetch(API, { method:"POST", body: isForm ? payload : JSON.stringify(payload),
+    headers: isForm ? {} : {"Content-Type":"application/json"} });
+  let data = {}; try{ data = await res.json(); }catch(e){}
+  if(!res.ok) throw Object.assign(new Error(data.error || ("HTTP "+res.status)), {status:res.status});
+  return data;
+}
+let pin = ""; try{ pin = sessionStorage.getItem(PKEY) || ""; }catch(e){}
+
+/* Fotos vom Handy verkleinern (max. 2000 px, JPEG) – schneller Upload, kleine E-Mail */
+async function shrink(file){
+  if(!/^image\/(jpeg|png|webp|heic|heif)/.test(file.type) || file.size < 900*1024) return file;
+  try{
+    const bmp = await createImageBitmap(file);
+    const s = Math.min(1, 2000/Math.max(bmp.width,bmp.height));
+    const c = document.createElement("canvas"); c.width=Math.round(bmp.width*s); c.height=Math.round(bmp.height*s);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    const blob = await new Promise(r=>c.toBlob(r,"image/jpeg",0.85));
+    if(!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/,"")+".jpg", {type:"image/jpeg"});
+  }catch(e){ return file; }
+}
+
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const app = $("#app");
+
+/* ============ Sprache wählen ============ */
+const params = new URLSearchParams(location.search);
+let lang = "de", langChosen = false;
+(function initLang(){
+  const ok = c => LANGS.some(l=>l.c===c);
+  let stored=null; try{ stored=localStorage.getItem(LKEY); }catch(e){}
+  const fromUrl = params.get("lang");
+  if(fromUrl && ok(fromUrl)){ lang=fromUrl; langChosen=true; }
+  else if(stored && ok(stored)){ lang=stored; langChosen=true; }
+  else {
+    const nav=(navigator.language||"de").toLowerCase();
+    if(nav.startsWith("ar-ma")) lang="ary";
+    else { const b=nav.split("-")[0]; if(ok(b)) lang=b; }
+  }
+})();
+function setLang(c, manual=true){
+  lang=c; if(manual){ langChosen=true; try{ localStorage.setItem(LKEY,c); }catch(e){} }
+  render();
+}
+const B = s => ({h:`<strong>${esc(s)}</strong>`});
+function t(key, vars={}){
+  let s = (T[lang] && T[lang][key]) ?? T.de[key];
+  return s.replace(/\{(\w+)\}/g,(_,k)=>{ const v=vars[k]; return v&&v.h!=null ? v.h : esc(v); });
+}
+function plural(n, arr){
+  if(arr.length===1) return arr[0];
+  if(lang==="hr"){ const a=n%10,b=n%100; return a===1&&b!==11?arr[0]:(a>=2&&a<=4&&(b<12||b>14)?arr[1]:arr[2]); }
+  if(lang==="ar"||lang==="ary") return n===1?arr[0]:(n<=10?arr[1]:arr[2]);
+  return n===1?arr[0]:arr[1];
+}
+const fileCount = n => `${n} ${plural(n, T[lang].file || T.de.file)}`;
+
+/* Dokumenttitel/-hinweis in Kundensprache (nur für unveränderte Vorlagen) */
+function docText(d){
+  const tp = d.tpl!=null ? TEMPLATES[d.tpl] : null;
+  const tr = tp && tp[lang];
+  const title = tr && d.title===tp.de[0] ? tr[0] : d.title;
+  const hint  = tr && d.hint===tp.de[1]  ? tr[1] : d.hint;
+  return { title, hint, orig: lang!=="de" && title!==d.title ? d.title : "" };
+}
+
+function slug(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ß/g,"ss").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,40); }
+
+function shell(inner, {wide=false, advisor=false}={}){
+  const cur = advisor ? LANGS[0] : LANGS.find(l=>l.c===lang);
+  document.documentElement.lang = advisor ? "de" : (lang==="ary"?"ar-MA":lang);
+  document.documentElement.dir = cur.rtl ? "rtl" : "ltr";
+  const picker = advisor ? "" : `<select class="lang" id="langSel" aria-label="Sprache / Language">${LANGS.map(l=>`<option value="${l.c}" ${l.c===lang?"selected":""}>${esc(l.n)}</option>`).join("")}</select>`;
+  setTimeout(()=>{ const s=$("#langSel"); if(s) s.onchange=()=>setLang(s.value); });
+  return `
+  <div class="wrap ${wide?"wide":""}">
+    <header class="top">
+      <div class="logo"><i>✓</i> DoUpload</div>
+      <div class="top-r">${picker}<button class="link" onclick="go('home')">${advisor?"Start":t("start_link")}</button></div>
+    </header>${inner}</div>`;
+}
+
+/* ============ Routing ============ */
+let state = { view:"home" };
+function go(view, extra={}){ state = {view, ...extra}; render(); window.scrollTo(0,0); }
+function render(){
+  ({home:viewHome, login:viewLogin, code:viewCode, advisor:viewAdvisor, created:viewCreated, welcome:viewWelcome, step:viewStep, done:viewDone, thanks:viewThanks})[state.view]();
+}
+
+/* ============ Start ============ */
+function viewHome(){
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>${t("home_t")}</h1>
+      <p class="muted">${t("home_s")}</p>
+      <div class="choice">
+        <button onclick="go('code')"><strong>${t("have")}</strong><span class="muted small">${t("have_s")}</span></button>
+        <button onclick="go('advisor',{tab:'new'})"><strong>${t("adv")}</strong><span class="muted small">${t("adv_s")}</span></button>
+      </div>
+    </div>`);
+}
+
+/* ============ Kunde ============ */
+let session=null;
+
+function viewCode(){
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>${t("code_t")}</h1>
+      <p class="muted">${t("code_s")}</p>
+      <input id="code" class="code-input" dir="ltr" type="text" maxlength="6" autocomplete="one-time-code" autocapitalize="characters" placeholder="······" value="${esc(state.prefill||"")}">
+      <div id="err" class="err hidden"></div>
+      <div style="height:14px"></div>
+      <button class="btn block" id="go">${t("next")}</button>
+    </div>`);
+  const inp=$("#code"); inp.focus();
+  inp.oninput=()=>{ state.prefill=inp.value; };
+  const btn=$("#go");
+  const submit=async()=>{
+    const code=inp.value.trim().toUpperCase(), e=$("#err");
+    e.classList.add("hidden"); btn.disabled=true;
+    try{
+      const r=await api({action:"get", code});
+      if(r.status==="done"){ e.textContent=t("already"); e.classList.remove("hidden"); return; }
+      session = { code, req:r.request, person:{name:r.name}, files: r.request.docs.map(()=>[]), confirmed: r.request.docs.map(()=>false) };
+      if(!langChosen && r.request.lang) lang = r.request.lang;
+      go("welcome");
+    }catch(err){
+      e.textContent = err.status===404 ? t("code_err") : t("offline"); e.classList.remove("hidden");
+    }finally{ btn.disabled=false; }
+  };
+  $("#go").onclick=submit;
+  inp.onkeydown=e=>{ if(e.key==="Enter") submit(); };
+}
+
+function viewWelcome(){
+  const {req,person}=session;
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>${t("hello",{name:person.name})}</h1>
+      ${req.title?`<p class="muted small">${t("purpose",{title:req.title})}</p>`:""}
+      <p>${t("needs",{adv:req.advisorName?B(req.advisorName):t("your_adv"), n:req.docs.length})}</p>
+      <ol style="margin:0 0 14px">${req.docs.map(d=>`<li>${esc(docText(d).title)}</li>`).join("")}</ol>
+      <p class="muted small">${t("w_hint")}</p>
+      <button class="btn block" onclick="go('step',{i:0})">${t("start")}</button>
+    </div>`);
+}
+
+function viewStep(){
+  const i=state.i, {req}=session, d=req.docs[i], dt=docText(d), files=session.files[i], n=req.docs.length;
+  const prog = req.docs.map((_,k)=>`<span class="${k<i?"done":k===i?"now":""}"></span>`).join("");
+  app.innerHTML = shell(`
+    <div class="card">
+      <div class="progress">${prog}</div>
+      <div class="step-label">${t("step",{i:i+1,n})}</div>
+      <div class="doc-title">${esc(dt.title)}</div>
+      ${dt.orig?`<p class="orig">${t("orig")} <span lang="de" dir="ltr">${esc(dt.orig)}</span></p>`:""}
+      ${dt.hint?`<div class="hint">${esc(dt.hint)}</div>`:""}
+      <label class="drop">
+        <strong>${t("up")}</strong>
+        <span class="muted small">${t("up_s")}</span>
+        <input id="file" type="file" accept="image/*,application/pdf" multiple>
+      </label>
+      <ul class="files" id="list"></ul>
+      <label class="confirm ${files.length?"":"hidden"}" id="confWrap">
+        <input type="checkbox" id="conf" ${session.confirmed[i]?"checked":""}>
+        <span>${t("confirm",{doc:B(dt.title)})}</span>
+      </label>
+      <div class="nav">
+        ${i>0?`<button class="btn sec" onclick="go('step',{i:${i-1}})">${t("back")}</button>`:""}
+        <button class="btn" id="next">${i===n-1?t("finish"):t("next_doc")}</button>
+      </div>
+    </div>`);
+  const list=$("#list"), next=$("#next"), conf=$("#conf"), confWrap=$("#confWrap");
+  const refresh=()=>{
+    if(state.view!=="step"||state.i!==i) return;
+    list.innerHTML = files.map((f,k)=>`<li>${f.type.startsWith("image/")?`<img src="${f.url}" alt="">`:`<div class="pdf">PDF</div>`}<span class="fn">${esc(f.name)}${f.st==="up"?`<br><span class="muted">${t("uploading")}</span>`:f.st==="err"?`<br><span class="err" style="margin:0">${t("up_err")}</span>`:""}</span><button data-k="${k}" aria-label="${t("remove")}" ${f.st==="up"?"disabled":""}>×</button></li>`).join("");
+    list.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const f=files.splice(+b.dataset.k,1)[0];
+      if(f.id) api({action:"remove", code:session.code, id:f.id}).catch(()=>{});
+      if(!files.length){session.confirmed[i]=false; conf.checked=false;} refresh();
+    });
+    const good=files.filter(f=>f.st==="ok").length, busy=files.some(f=>f.st==="up");
+    confWrap.classList.toggle("hidden",!files.length);
+    next.disabled = !(good && !busy && conf.checked);
+  };
+  const uploadOne=async f=>{
+    f.st="up"; refresh();
+    try{
+      const small=await shrink(f.raw);
+      const fd=new FormData(); fd.append("code",session.code); fd.append("doc",String(i)); fd.append("file",small,small.name);
+      const r=await api(fd); f.id=r.id; f.st="ok"; f.raw=null;
+    }catch(e){ f.st="err"; }
+    refresh();
+  };
+  $("#file").onchange=e=>{
+    for(const raw of e.target.files){
+      const f={raw, name:raw.name, type:raw.type, url:URL.createObjectURL(raw), st:"up"};
+      files.push(f); uploadOne(f);
+    }
+    e.target.value=""; refresh();
+  };
+  conf.onchange=()=>{ session.confirmed[i]=conf.checked; refresh(); };
+  next.onclick=()=> i===n-1 ? go("done") : go("step",{i:i+1});
+  refresh();
+}
+
+/* Versand: der Server benennt die Dateien (deutsch) und schickt sie per E-Mail an den Berater */
+function viewDone(){
+  const {req}=session;
+  const ex=`01_${slug(req.docs[0].title)}_${slug(session.person.name)||"Kunde"}.jpg`;
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>${t("done_t")}</h1>
+      <p class="muted">${t("done_s")}</p>
+      <ul class="summary">${req.docs.map((d,i)=>`<li><span>${i+1}. ${esc(docText(d).title)}</span><span class="ok">✓ ${fileCount(session.files[i].filter(f=>f.st==="ok").length)}</span></li>`).join("")}</ul>
+      <button class="btn block" id="send">${t("send")}</button>
+      <div id="err" class="err hidden"></div>
+      <div style="height:10px"></div>
+      <button class="btn sec block" onclick="go('step',{i:${req.docs.length-1}})">${t("back")}</button>
+      <p class="note">${t("note",{ex:{h:`<em dir="ltr">${esc(ex)}</em>`}})}</p>
+    </div>`);
+  const btn=$("#send"), err=$("#err");
+  btn.onclick=async()=>{
+    btn.disabled=true; btn.textContent=t("sending"); err.classList.add("hidden");
+    try{ await api({action:"submit", code:session.code, lang}); go("thanks"); }
+    catch(e){ btn.disabled=false; btn.textContent=t("send"); err.textContent=t("send_err"); err.classList.remove("hidden"); console.error(e); }
+  };
+}
+function viewThanks(){
+  app.innerHTML=shell(`<div class="card" style="text-align:center"><div style="font-size:3rem">✅</div><h1>${t("thx")}</h1><p class="muted">${t("thx_s")}</p></div>`);
+}
+
+/* ============ Berater (Oberfläche Deutsch, PIN-geschützt) ============ */
+let draft={ advisorName:"", advisorEmail:"", title:"", people:"", lang:"", docs:[] };
+let cache=[]; // zuletzt geladene Anfragen
+try{ const d=JSON.parse(localStorage.getItem("dokuschritt_draft")||"null"); if(d){ draft.advisorName=d.n||""; draft.advisorEmail=d.e||""; } }catch(e){}
+
+function viewLogin(){
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>Berater-Bereich</h1>
+      <p class="muted">Bitte PIN eingeben.</p>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:1.3rem;letter-spacing:.3em;text-align:center">
+      <div id="err" class="err hidden"></div>
+      <div style="height:14px"></div>
+      <button class="btn block" id="go">Anmelden</button>
+    </div>`, {advisor:true});
+  const inp=$("#pin"), btn=$("#go"); inp.focus();
+  const submit=async()=>{
+    btn.disabled=true;
+    try{ await api({action:"login", pin:inp.value}); pin=inp.value; try{ sessionStorage.setItem(PKEY,pin); }catch(e){} go("advisor",{tab:state.tab||"new"}); }
+    catch(e){ const er=$("#err"); er.textContent=e.status===401?e.message:"Keine Verbindung zum Server."; er.classList.remove("hidden"); }
+    finally{ btn.disabled=false; }
+  };
+  btn.onclick=submit; inp.onkeydown=e=>{ if(e.key==="Enter") submit(); };
+}
+
+function viewAdvisor(){
+  if(!pin) return viewLogin();
+  const tab=state.tab||"new";
+  app.innerHTML = shell(`
+    <div class="tabs">
+      <button class="${tab==="new"?"on":""}" onclick="go('advisor',{tab:'new'})">Neue Anfrage</button>
+      <button class="${tab==="list"?"on":""}" onclick="go('advisor',{tab:'list'})">Übersicht</button>
+    </div>
+    <div id="pane">${tab==="new"?advisorForm():`<div class="card"><p class="muted">Lädt …</p></div>`}</div>`, {wide:true, advisor:true});
+  if(tab==="new") bindForm(); else loadList();
+}
+
+function advisorForm(){
+  return `
+  <div class="card">
+    <h2>1. Wohin sollen die Unterlagen?</h2>
+    <div class="row">
+      <div><label for="aName">Ihr Name</label><input type="text" id="aName" value="${esc(draft.advisorName)}" placeholder="z. B. Mesut Yilmaz"></div>
+      <div><label for="aMail">Empfänger-E-Mail</label><input type="email" id="aMail" value="${esc(draft.advisorEmail)}" placeholder="unterlagen@ihre-firma.de"></div>
+    </div>
+    <label for="aTitle">Anlass (optional)</label>
+    <input type="text" id="aTitle" value="${esc(draft.title)}" placeholder="z. B. Baufinanzierung, Elternbrief 10b">
+  </div>
+  <div class="card">
+    <h2>2. Von wem?</h2>
+    <p class="muted small">Ein Name pro Zeile. Jede Person bekommt einen eigenen Code – auch für Gruppen (z. B. alle Eltern einer Klasse).</p>
+    <textarea id="aPeople" placeholder="Familie Becker&#10;Herr Schulz">${esc(draft.people)}</textarea>
+    <label for="aLang">Sprache für den Kunden vorauswählen</label>
+    <select class="f" id="aLang">
+      <option value="">Automatisch (Handy-Sprache)</option>
+      ${LANGS.map(l=>`<option value="${l.c}" ${draft.lang===l.c?"selected":""}>${esc(l.n)}</option>`).join("")}
+    </select>
+    <p class="muted small" style="margin-top:6px">Der Kunde kann die Sprache jederzeit oben rechts ändern.</p>
+  </div>
+  <div class="card">
+    <h2>3. Welche Dokumente – in welcher Reihenfolge?</h2>
+    <p class="muted small">Jedes Dokument wird dem Kunden auf einer eigenen Seite angezeigt. Vorlagen werden automatisch in die Kundensprache übersetzt; eigene Dokumente erscheinen so, wie Sie sie schreiben.</p>
+    <div class="chips">${TEMPLATES.map((tp,k)=>`<button class="chip" data-t="${k}">+ ${esc(tp.de[0])}</button>`).join("")}<button class="chip" data-t="-1">+ Eigenes Dokument</button></div>
+    <div id="docs"></div>
+  </div>
+  <div id="formErr" class="err hidden"></div>
+  <button class="btn block" id="create">Codes erstellen</button>
+  <p class="small" style="margin-top:14px"><button class="link" id="logout">Abmelden</button></p>`;
+}
+
+function bindForm(){
+  const sync=()=>{ draft.advisorName=$("#aName").value; draft.advisorEmail=$("#aMail").value; draft.title=$("#aTitle").value; draft.people=$("#aPeople").value; draft.lang=$("#aLang").value; };
+  ["#aName","#aMail","#aTitle","#aPeople"].forEach(s=>$(s).oninput=sync);
+  $("#aLang").onchange=sync;
+  $("#logout").onclick=()=>{ pin=""; try{ sessionStorage.removeItem(PKEY); }catch(e){} go("home"); };
+  const docsEl=$("#docs");
+  const isTpl = d => d.tpl!=null && d.title===TEMPLATES[d.tpl].de[0];
+  const drawDocs=()=>{
+    docsEl.innerHTML = draft.docs.length ? draft.docs.map((d,k)=>`
+      <div class="doc-row">
+        <div>
+          <input type="text" data-k="${k}" data-f="title" value="${esc(d.title)}" placeholder="Name des Dokuments" style="font-weight:600;margin-bottom:6px">
+          <input type="text" data-k="${k}" data-f="hint" value="${esc(d.hint)}" placeholder="Hinweis für den Kunden (optional)">
+          <div class="tag" data-tag="${k}">${isTpl(d)?"🌐 wird übersetzt":"nur Deutsch"}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <button class="del" data-up="${k}" title="Nach oben" ${k===0?"disabled":""}>↑</button>
+          <button class="del" data-del="${k}" title="Entfernen">×</button>
+        </div>
+      </div>`).join("") : `<p class="muted small">Noch keine Dokumente – oben antippen.</p>`;
+    docsEl.querySelectorAll("input").forEach(inp=>inp.oninput=()=>{
+      const k=+inp.dataset.k; draft.docs[k][inp.dataset.f]=inp.value;
+      docsEl.querySelector(`[data-tag="${k}"]`).textContent = isTpl(draft.docs[k])?"🌐 wird übersetzt":"nur Deutsch";
+    });
+    docsEl.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ draft.docs.splice(+b.dataset.del,1); drawDocs(); });
+    docsEl.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{ const k=+b.dataset.up; if(k>0){ [draft.docs[k-1],draft.docs[k]]=[draft.docs[k],draft.docs[k-1]]; drawDocs(); } });
+  };
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+    const k=+c.dataset.t;
+    draft.docs.push(k<0?{title:"",hint:""}:{title:TEMPLATES[k].de[0],hint:TEMPLATES[k].de[1],tpl:k});
+    drawDocs();
+    if(k<0) docsEl.querySelector(`input[data-k="${draft.docs.length-1}"]`).focus();
+  });
+  drawDocs();
+  const btn=$("#create");
+  btn.onclick=async()=>{
+    sync();
+    const people=draft.people.split("\n").map(s=>s.trim()).filter(Boolean);
+    const docs=draft.docs.filter(d=>d.title.trim());
+    const err=$("#formErr");
+    const msg = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(draft.advisorEmail.trim()) ? "Bitte eine gültige E-Mail-Adresse angeben."
+      : !people.length ? "Bitte mindestens eine Person eintragen."
+      : !docs.length ? "Bitte mindestens ein Dokument hinzufügen." : "";
+    if(msg){ err.textContent=msg; err.classList.remove("hidden"); return; }
+    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Wird erstellt …";
+    try{
+      const r=await api({action:"create", pin, request:{ advisorName:draft.advisorName, advisorEmail:draft.advisorEmail, title:draft.title, lang:draft.lang, people,
+        docs:docs.map(d=>({title:d.title,hint:d.hint,...(d.tpl!=null?{tpl:d.tpl}:{})})) }});
+      try{ localStorage.setItem("dokuschritt_draft", JSON.stringify({n:draft.advisorName,e:draft.advisorEmail})); }catch(e){}
+      const req={ id:r.id, title:draft.title.trim(), advisorName:draft.advisorName.trim(), lang:draft.lang, docs, recipients:r.recipients.map(p=>({...p,status:"open"})) };
+      cache=[req, ...cache.filter(x=>x.id!==req.id)];
+      draft={ advisorName:draft.advisorName, advisorEmail:draft.advisorEmail, title:"", people:"", lang:draft.lang, docs:[] };
+      go("created",{id:req.id});
+    }catch(e){
+      if(e.status===401){ pin=""; return viewLogin(); }
+      err.textContent="Fehler: "+e.message; err.classList.remove("hidden");
+      btn.disabled=false; btn.textContent="Codes erstellen";
+    }
+  };
+}
+
+function linkFor(req,code){ return location.origin+location.pathname+"?code="+code+(req.lang?"&lang="+req.lang:""); }
+function inviteText(req,p){
+  return `Hallo ${p.name},\n\nbitte laden Sie Ihre Unterlagen${req.title?" für "+req.title:""} hier hoch:\n${linkFor(req,p.code)}\n\nIhr persönlicher Code: ${p.code}\n\nSie werden Schritt für Schritt durch ${req.docs.length} Dokument(e) geführt. Die Sprache können Sie oben rechts wählen (Türkçe, العربية, Hrvatski, Italiano, हिन्दी, English …).\n\nViele Grüße\n${req.advisorName}`;
+}
+
+function viewCreated(){
+  const req=cache.find(r=>r.id===state.id);
+  app.innerHTML = shell(`
+    <div class="card">
+      <h1>Codes erstellt</h1>
+      <p class="muted">Senden Sie jeder Person ihren Code oder Link (z. B. per WhatsApp oder SMS).</p>
+      ${recipTable(req)}
+      <div style="height:12px"></div>
+      <button class="btn sec block" onclick="go('advisor',{tab:'list'})">Zur Übersicht</button>
+    </div>`, {wide:true, advisor:true});
+  bindCopy();
+}
+
+function recipTable(req){
+  const ln = c => (LANGS.find(l=>l.c===c)||{}).n || "";
+  return `<table><thead><tr><th>Person</th><th>Code</th><th>Status</th><th></th></tr></thead><tbody>
+    ${req.recipients.map((p,k)=>`<tr><td>${esc(p.name)}</td><td><span class="code">${esc(p.code)}</span></td>
+      <td><span class="badge ${p.status==="done"?"done":""}">${p.status==="done"?"gesendet":"offen"}</span>${p.lang?`<div class="muted small">${esc(ln(p.lang))}</div>`:""}</td>
+      <td style="text-align:end"><button class="btn sec sm" data-copy="${req.id}|${k}">Einladung kopieren</button></td></tr>`).join("")}
+  </tbody></table>`;
+}
+function bindCopy(){
+  document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{
+    const [id,k]=b.dataset.copy.split("|"); const req=cache.find(r=>r.id===id); const p=req.recipients[+k];
+    const txt=inviteText(req,p);
+    try{ await navigator.clipboard.writeText(txt); b.textContent="Kopiert ✓"; }
+    catch(e){ window.prompt("Text kopieren:",txt); }
+    setTimeout(()=>b.textContent="Einladung kopieren",1800);
+  });
+}
+
+async function loadList(){
+  const pane=$("#pane");
+  try{
+    const r=await api({action:"list", pin});
+    cache=r.requests.map(x=>({id:x.id, createdAt:x.created_at, advisorName:x.advisor_name, advisorEmail:x.advisor_email, title:x.title, lang:x.lang, docs:x.docs, recipients:x.recipients}));
+    if(state.view!=="advisor") return;
+    pane.innerHTML = !cache.length ? `<div class="card"><p class="muted">Noch keine Anfragen.</p></div>` : cache.map(r=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+          <h2 style="margin:0">${esc(r.title||"Anfrage")}</h2>
+          <span class="muted small">${new Date(r.createdAt).toLocaleDateString("de-DE")}</span>
+        </div>
+        <p class="muted small">${r.docs.length} Dokumente: ${r.docs.map(d=>esc(d.title)).join(" · ")}<br>→ ${esc(r.advisorEmail)}</p>
+        ${recipTable(r)}
+      </div>`).join("") + `<button class="btn sec block" onclick="go('advisor',{tab:'list'})">Aktualisieren</button>`;
+    bindCopy();
+  }catch(e){
+    if(e.status===401){ pin=""; return viewLogin(); }
+    pane.innerHTML=`<div class="card"><p class="err">Fehler: ${esc(e.message)}</p></div>`;
+  }
+}
+
+/* ============ Einstieg über Link ?code=…&lang=… ============ */
+const urlCode=params.get("code");
+if(urlCode) go("code",{prefill:urlCode.toUpperCase()}); else render();
+</script>
+</body>
+</html>
