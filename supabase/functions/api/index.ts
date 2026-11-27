@@ -1,7 +1,7 @@
 // DoUpload API – Empfänger-Konten (Code erstellen) und Absender (Code eingeben)
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { db: { schema: "doupload" } }); // Projekt A: App-Schema "doupload"
 const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = Deno.env.get("EMAIL_FROM") ?? "DoUpload <onboarding@resend.dev>";
 const BUCKET = "uploads";
